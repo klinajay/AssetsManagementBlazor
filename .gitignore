@@ -1,0 +1,21 @@
+
+.vs/
+AssetsManagementBlazor/bin/
+AssetsManagementBlazor/obj/
+Tests/bin/
+Tests/obj/
+# User-specific files
+.vscode/
+*.user
+*.suo
+
+# Logs
+logs/
+*.log
+
+# Secrets (Never commit!)
+appsettings.json
+appsettings.Development.json
+
+AssetsManagementBlazor/appsettings.json
+AssetsManagementBlazor/appsettings.Development.json

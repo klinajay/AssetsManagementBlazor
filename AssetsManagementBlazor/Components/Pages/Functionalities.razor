@@ -1,0 +1,33 @@
+﻿@page "/functionalities"
+@using AssetsManagementBlazor.Services
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+@inject InMemoryStorageService inMemoryStorageService
+@inject HttpClient Http
+
+<h3 style="color: #188FFF">Functionalities</h3>
+<div class="d-flex flex-wrap gap-4 justify-content-start">
+
+  
+        <FunctionalityCard Assets="@assets"
+                           Description="Get the list of Asset names for given machine type."
+                           HasMachineDropdown="true"
+                           IsDropdownRequired="true"
+                           Machines="machines"
+                           Title="Functionality A" />
+    
+        <FunctionalityCard Assets="@assets"
+                           Description="Get the list of all machine types on which given asset is used."
+                           HasAssetDropdown="true"
+                           IsDropdownRequired="true"
+                           Machines="machines"
+                           Title="Functionality B" />
+ 
+        <FunctionalityCard Assets="@assets"
+                           Description="Get the machine types which are using the latest series of all the assets that it uses."
+                           Machines="machines"
+                           Title="Functionality C"
+                           IsDropdownRequired="false" />
+
+    
+</div>

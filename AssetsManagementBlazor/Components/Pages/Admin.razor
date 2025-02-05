@@ -1,0 +1,17 @@
+﻿@page "/admin"
+@rendermode InteractiveServer
+@inject HttpClient Http
+<h3 style="color: #188DE2">Admin Page</h3>
+<div class="card" style="width: 18rem;">
+    <div class="card-body" style="background-color:black">  
+        <p class="card-text" style="color:white">Add Data from the text file.</p>
+        <button @onclick="AddDataAsync" class="btn" style="background-color: #374248; color : #11A5BB; margin-bottom : 10px">Add Data</button>
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <p style="color: #188DE2">@message</p>
+        }
+
+    </div>
+      
+</div>
+

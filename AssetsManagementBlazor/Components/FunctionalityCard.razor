@@ -1,0 +1,158 @@
+﻿@using AssetsManagement.Models;
+@using AssetsManagementBlazor.Services
+
+<div class="card" style="width: 18rem; background-color:black">
+    <div class="card-body" style="color : white">
+        <h5 class="card-title">@Title</h5>
+        <p class="card-text">@Description</p>
+
+        @if (IsDropdownRequired)
+        {
+            @if (HasMachineDropdown)
+            {
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" style="background-color: #374248; color : #11A5BB" @onclick="ToggleDropdown">
+                        Machines
+                    </button>
+                    <ul class="dropdown-menu @(isDropdownVisible ? "show" : "")">
+                        @foreach (var machine in Machines)
+                        {
+                            <li class="dropdown-item" @onclick="() => SelectMachine(machine.Name)">
+                                @machine.Name
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+          
+
+            @if (HasAssetDropdown)
+            {
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" style="background-color: #374248; color : #11A5BB" @onclick="ToggleDropdown">
+                        Assets
+                    </button>
+                    <ul class="dropdown-menu @(isDropdownVisible ? "show" : "")">
+                        @foreach (var asset in Assets)
+                        {
+                            <li class="dropdown-item" @onclick="() => SelectAsset(asset.Name)">
+                                @asset.Name
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+        else
+        {
+            <button class="btn" type="button" style="background-color: #374248; color : #11A5BB" @onclick="ShowLatestMachines">
+                Machines
+            </button>
+            @if (showLatest)
+            {
+               
+                <div class="mt-3">
+                    <h5>Machines using latest assets</h5>
+                    <ul>
+                        @if (machinesUsingLatestAssets.Count != 0)
+                        {
+                            @foreach (var machine in machinesUsingLatestAssets)
+                            {
+                                <li style="color:white">@machine.Name</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+        }
+
+        @if (selectedMachine != null)
+        {
+            <div class="mt-3">
+                <h5>Assets for @selectedMachine.Name</h5>
+                <ul>
+                    @if (selectedMachine.Assets != null && selectedMachine.Assets.Any())
+                    {
+                        @foreach (var asset in selectedMachine.Assets)
+                        {
+                            <li>@asset.Key</li>
+                        }
+                    }
+                    else
+                    {
+                        <li>No assets found.</li>
+                    }
+                </ul>
+            </div>
+        }
+
+
+        @if (selectedAsset != null)
+        {
+            <div class="mt-3">
+                <h5>Machines using Asset: @selectedAsset</h5>
+                <ul>
+                    @if (machinesUsingAssets != null)
+                    {
+                        @foreach (var machine in machinesUsingAssets)
+                        {
+                            <li>@machine.Name</li>
+                        }
+                    }
+                </ul>
+
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter] public List<Machines> Machines { get; set; }
+    [Parameter] public List<Assets> Assets { get; set; }
+    [Parameter] public bool HasMachineDropdown { get; set; }
+    [Parameter] public bool HasAssetDropdown { get; set; }
+    [Parameter] public bool IsDropdownRequired { get; set; }
+    private Machines? selectedMachine = null;
+    private string? selectedAsset = null;
+    private bool isDropdownVisible = false;
+    private bool showLatest = false;
+    private List<Machines>? machinesUsingAssets ;
+    private List<Machines> machinesUsingLatestAssets = new List<Machines>();
+
+    private void ToggleDropdown()
+    {
+        isDropdownVisible = !isDropdownVisible;
+    }
+
+    private void SelectMachine(string machineName)
+    {
+        isDropdownVisible = !isDropdownVisible;
+        selectedMachine = Machines.Find(machine => machine.Name == machineName);
+        Console.WriteLine(selectedMachine.Name);
+    }
+
+    private void SelectAsset(string assetName)
+    {
+        isDropdownVisible = !isDropdownVisible;
+        selectedAsset = assetName;
+        machinesUsingAssets = Machines.FindAll(machine => machine.Assets.ContainsKey(selectedAsset));
+    }
+    private void ShowLatestMachines() {
+        foreach(var machine in Machines) {
+            int count = 0;
+            foreach(var assetInMachine in machine.Assets) {
+                if(Assets.Any(asset => asset.LatestVersion == assetInMachine.Value)) {
+                    count++;
+                }
+            }
+            if(count == machine.Assets.Count) {
+                
+                machinesUsingLatestAssets.Add(machine);
+            }
+        }
+        
+        showLatest = true;
+    }
+}
