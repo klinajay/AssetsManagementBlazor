@@ -15,7 +15,7 @@ namespace AssetsManagementBlazor.Components.Pages
         {
             if (inMemoryStorageService.GetMachines() == null)
             {
-                var machinesResponse = await Http.GetAsync("https://localhost:7101/api/machines");
+                var machinesResponse = await Http.GetAsync("http://restapi:8080/api/machines");
                 if (machinesResponse.IsSuccessStatusCode)
                 {
                     var responseBody = await machinesResponse.Content.ReadAsStringAsync();
@@ -41,7 +41,7 @@ namespace AssetsManagementBlazor.Components.Pages
 
             if (inMemoryStorageService.GetAssets() == null)
             {
-                var assetsResponse = await Http.GetAsync("https://localhost:7101/api/assets");
+                var assetsResponse = await Http.GetAsync("http://restapi:8080/api/assets");
                 if (assetsResponse.IsSuccessStatusCode)
                 {
                     var responseBody = await assetsResponse.Content.ReadAsStringAsync();

@@ -9,7 +9,7 @@ namespace AssetsManagementBlazor.Components.Pages
         {
             Console.WriteLine("heyy");
             var content = new StringContent(""); // Empty content
-            var response = await Http.PostAsync("https://localhost:7101/api/admin", content);
+            var response = await Http.PostAsync("http://restapi:8080/api/admin", content);
             Console.WriteLine(response);
             Console.WriteLine(response);
             if(response.IsSuccessStatusCode)
