@@ -1,8 +1,10 @@
 ﻿@using AssetsManagement.Models;
 @using AssetsManagementBlazor.Services
+@using System.Net
+@inject HttpClient Http
 
 <div class="card" style="width: 18rem; background-color:black">
-    <div class="card-body" style="color : white">
+    <div class="card-body" style="color: white">
         <h5 class="card-title">@Title</h5>
         <p class="card-text">@Description</p>
 
@@ -11,10 +13,10 @@
             @if (HasMachineDropdown)
             {
                 <div class="dropdown">
-                    <button class="btn dropdown-toggle" type="button" style="background-color: #374248; color : #11A5BB" @onclick="ToggleDropdown">
+                    <button class="btn dropdown-toggle" type="button" style="background-color: #374248; color: #11A5BB" @onclick="ToggleMachineDropdown">
                         Machines
                     </button>
-                    <ul class="dropdown-menu @(isDropdownVisible ? "show" : "")">
+                    <ul class="dropdown-menu @(isMachineDropdownVisible ? "show" : "")">
                         @foreach (var machine in Machines)
                         {
                             <li class="dropdown-item" @onclick="() => SelectMachine(machine.Name)">
@@ -24,15 +26,14 @@
                     </ul>
                 </div>
             }
-          
 
             @if (HasAssetDropdown)
             {
                 <div class="dropdown">
-                    <button class="btn dropdown-toggle" type="button" style="background-color: #374248; color : #11A5BB" @onclick="ToggleDropdown">
+                    <button class="btn dropdown-toggle" type="button" style="background-color: #374248; color: #11A5BB" @onclick="ToggleAssetDropdown">
                         Assets
                     </button>
-                    <ul class="dropdown-menu @(isDropdownVisible ? "show" : "")">
+                    <ul class="dropdown-menu @(isAssetDropdownVisible ? "show" : "")">
                         @foreach (var asset in Assets)
                         {
                             <li class="dropdown-item" @onclick="() => SelectAsset(asset.Name)">
@@ -45,12 +46,12 @@
         }
         else
         {
-            <button class="btn" type="button" style="background-color: #374248; color : #11A5BB" @onclick="ShowLatestMachines">
-                Machines
+            <button class="btn" type="button" style="background-color: #374248; color: #11A5BB" @onclick="ShowLatestMachines">
+                Machines Using Latest Assets
             </button>
+
             @if (showLatest)
             {
-               
                 <div class="mt-3">
                     <h5>Machines using latest assets</h5>
                     <ul>
@@ -58,49 +59,55 @@
                         {
                             @foreach (var machine in machinesUsingLatestAssets)
                             {
-                                <li style="color:white">@machine.Name</li>
+                                <li style="color:white">@machine</li>
                             }
+                        }
+                        else
+                        {
+                            <li>No machines found with the latest assets.</li>
                         }
                     </ul>
                 </div>
             }
         }
 
-        @if (selectedMachine != null)
+        @if (selectedMachine != null && AssetsOfSelectedMachine.Count > 0)
         {
             <div class="mt-3">
                 <h5>Assets for @selectedMachine.Name</h5>
                 <ul>
-                    @if (selectedMachine.Assets != null && selectedMachine.Assets.Any())
+                    @foreach (var asset in AssetsOfSelectedMachine)
                     {
-                        @foreach (var asset in selectedMachine.Assets)
-                        {
-                            <li>@asset.Key</li>
-                        }
-                    }
-                    else
-                    {
-                        <li>No assets found.</li>
+                        <li>@asset</li>
                     }
                 </ul>
             </div>
         }
-
 
         @if (selectedAsset != null)
         {
             <div class="mt-3">
                 <h5>Machines using @selectedAsset</h5>
                 <ul>
-                    @if (machinesUsingAssets != null)
+                    @if (machinesUsingAsset.Count != 0)
                     {
-                        @foreach (var machine in machinesUsingAssets)
+                        @foreach (var machine in machinesUsingAsset)
                         {
-                            <li>@machine.Name</li>
+                            <li style="color:white">@machine</li>
                         }
                     }
+                    else
+                    {
+                        <li>No machines found using @selectedAsset</li>
+                    }
                 </ul>
+            </div>
+        }
 
+        @if (!string.IsNullOrEmpty(errorMessageGlobal))
+        {
+            <div class="mt-3">
+                <p style="color: red;">@errorMessageGlobal</p>
             </div>
         }
     </div>
@@ -114,45 +121,122 @@
     [Parameter] public bool HasMachineDropdown { get; set; }
     [Parameter] public bool HasAssetDropdown { get; set; }
     [Parameter] public bool IsDropdownRequired { get; set; }
+
     private Machines? selectedMachine = null;
     private string? selectedAsset = null;
-    private bool isDropdownVisible = false;
+    private bool isMachineDropdownVisible = false;
+    private bool isAssetDropdownVisible = false;
     private bool showLatest = false;
-    private List<Machines>? machinesUsingAssets ;
-    private List<Machines> machinesUsingLatestAssets = new List<Machines>();
 
-    private void ToggleDropdown()
-    {
-        isDropdownVisible = !isDropdownVisible;
-    }
+    private List<string>? machinesUsingAsset = new();
+    private List<string> machinesUsingLatestAssets = new();
+    private List<string> AssetsOfSelectedMachine = new();
+    private string errorMessageGlobal = "";
 
-    private void SelectMachine(string machineName)
+    private void ToggleMachineDropdown() => isMachineDropdownVisible = !isMachineDropdownVisible;
+    private void ToggleAssetDropdown() => isAssetDropdownVisible = !isAssetDropdownVisible;
+
+    private async Task SelectMachine(string machineName)
     {
-        isDropdownVisible = !isDropdownVisible;
+        isMachineDropdownVisible = false;
         selectedMachine = Machines.Find(machine => machine.Name == machineName);
-        Console.WriteLine(selectedMachine.Name);
-    }
 
-    private void SelectAsset(string assetName)
-    {
-        isDropdownVisible = !isDropdownVisible;
-        selectedAsset = assetName;
-        machinesUsingAssets = Machines.FindAll(machine => machine.Assets.ContainsKey(selectedAsset));
-    }
-    private void ShowLatestMachines() {
-        foreach(var machine in Machines) {
-            int count = 0;
-            foreach(var assetInMachine in machine.Assets) {
-                if(Assets.Any(asset => asset.LatestVersion == assetInMachine.Value)) {
-                    count++;
+        if (selectedMachine == null) return;
+
+        errorMessageGlobal = ""; // Clear previous errors
+
+        try
+        {
+            var response = await Http.GetAsync($"https://localhost:7101/api/machines/{machineName}/assets");
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    errorMessageGlobal = "No assets found for this machine.";
+                    AssetsOfSelectedMachine.Clear();
+                }
+                else
+                {
+                    AssetsOfSelectedMachine = await response.Content.ReadFromJsonAsync<List<string>>() ?? new();
                 }
             }
-            if(count == machine.Assets.Count) {
-                
-                machinesUsingLatestAssets.Add(machine);
+            else
+            {
+                errorMessageGlobal = $"Error {response.StatusCode}: Unable to fetch data.";
             }
         }
-        
+        catch (Exception ex)
+        {
+            errorMessageGlobal = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task SelectAsset(string assetName)
+    {
+        isAssetDropdownVisible = false;
+        selectedAsset = assetName;
+
+        errorMessageGlobal = ""; // Clear previous errors
+
+        try
+        {
+            var response = await Http.GetAsync($"https://localhost:7101/api/assets/{assetName}/machines");
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    errorMessageGlobal = $"No machines found using {selectedAsset}.";
+                    machinesUsingAsset.Clear();
+                }
+                else
+                {
+                    machinesUsingAsset = await response.Content.ReadFromJsonAsync<List<string>>() ?? new();
+                }
+            }
+            else
+            {
+                errorMessageGlobal = $"Error {response.StatusCode}: Unable to fetch data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessageGlobal = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task ShowLatestMachines()
+    {
+        machinesUsingLatestAssets.Clear();
+        errorMessageGlobal = ""; // Clear previous errors
+
+        try
+        {
+            var response = await Http.GetAsync($"https://localhost:7101/api/machines/latest-assets");
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    errorMessageGlobal = "No machines found using the latest assets.";
+                    machinesUsingLatestAssets.Clear();
+                }
+                else
+                {
+                    machinesUsingLatestAssets = await response.Content.ReadFromJsonAsync<List<string>>() ?? new();
+                }
+            }
+            else
+            {
+                errorMessageGlobal = $"Error {response.StatusCode}: Unable to fetch data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessageGlobal = $"Error: {ex.Message}";
+        }
+
         showLatest = true;
     }
 }

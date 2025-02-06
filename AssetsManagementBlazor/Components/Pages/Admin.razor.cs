@@ -10,7 +10,7 @@ namespace AssetsManagementBlazor.Components.Pages
         string json = "json";
         public async Task AddDataAsync(string dataFormat)
         {
-            Console.WriteLine("heyy");
+            
             if(dataFormat.Equals(text))
             {
                 var content = new StringContent(""); 
