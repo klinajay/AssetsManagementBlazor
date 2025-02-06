@@ -2,16 +2,29 @@
 @rendermode InteractiveServer
 @inject HttpClient Http
 <h3 style="color: #188DE2">Admin Page</h3>
-<div class="card" style="width: 18rem;">
-    <div class="card-body" style="background-color:black">  
-        <p class="card-text" style="color:white">Add Data from the text file.</p>
-        <button @onclick="AddDataAsync" class="btn" style="background-color: #374248; color : #11A5BB; margin-bottom : 10px">Add Data</button>
-        @if (!string.IsNullOrEmpty(message))
+<div class="d-flex flex-wrap gap-4 justify-content-start">
+<div class="card" id="textCard" style="width: 18rem;">
+    <div class="card-body" id="textDiv" style="background-color:black">  
+        <p class="card-text" id="textDescription" style="color:white">Add Data from the text file.</p>
+        <button id="textButton" @onclick="() => AddDataAsync(text)"  class="btn" style="background-color: #374248; color : #11A5BB; margin-bottom : 10px">Add Data</button>
+        @if (!string.IsNullOrEmpty(textMessage))
         {
-            <p style="color: #188DE2">@message</p>
+            <p id="textMessage" style="color: #188DE2">@textMessage</p>
         }
 
     </div>
-      
-</div>
 
+</div>
+<div class="card" id="jsonCard" style="width: 18rem;">
+    <div class="card-body" id="jsonBody" style="background-color:black">
+        <p class="card-text" id="jsonDescription" style="color:white">Add Data from the json file.</p>
+        <button id="jsonButton" @onclick="() => AddDataAsync(json)" class="btn" style="background-color: #374248; color : #11A5BB; margin-bottom : 10px">Add Data</button>
+        @if (!string.IsNullOrEmpty(jsonMessage))
+        {
+            <p style="color: #188DE2" id="jsonMessage">@jsonMessage</p>
+        }
+
+    </div>
+
+</div>
+</div>

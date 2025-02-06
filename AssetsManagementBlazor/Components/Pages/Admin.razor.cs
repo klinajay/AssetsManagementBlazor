@@ -4,22 +4,41 @@ namespace AssetsManagementBlazor.Components.Pages
 {
     public partial class Admin
     {
-        string message = string.Empty;
-        public async Task AddDataAsync()
+        string textMessage = string.Empty;
+        string jsonMessage = string.Empty;
+        string text = "text";
+        string json = "json";
+        public async Task AddDataAsync(string dataFormat)
         {
             Console.WriteLine("heyy");
-            var content = new StringContent(""); // Empty content
-            var response = await Http.PostAsync("https://localhost:7101/api/admin", content);
-            Console.WriteLine(response);
-            Console.WriteLine(response);
-            if(response.IsSuccessStatusCode)
+            if(dataFormat.Equals(text))
             {
-                message = "Data added Successfully.";
+                var content = new StringContent(""); 
+                var response = await Http.PostAsync("https://localhost:7101/api/admin/text", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    textMessage = "Data added Successfully.";
+                }
+                else
+                {
+                    textMessage = "Something went wrong, Try again...";
+                }
             }
             else
             {
-                message = "Something went wrong, Try again...";
+                var content = new StringContent(""); 
+                var response = await Http.PostAsync("https://localhost:7101/api/admin/json", content);
+                Console.WriteLine(response);
+                if (response.IsSuccessStatusCode)
+                {
+                    jsonMessage = "Data added Successfully.";
+                }
+                else
+                {
+                    jsonMessage = "Something went wrong, Try again...";
+                }
             }
         }
+        
     }
 }
